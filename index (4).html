@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Darkstar E2EE — Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --blue:        #0077ff;
+            --blue-dark:   #0050cc;
+            --blue-light:  #e8f3ff;
+            --blue-mid:    #cce0ff;
+            --cyan:        #00c6ff;
+            --green:       #00d68f;
+            --red:         #ff4757;
+            --text:        #1a2035;
+            --text-muted:  #5a6a85;
+            --white:       #ffffff;
+            --card-bg:     rgba(255,255,255,0.95);
+            --shadow:      0 20px 60px rgba(0,100,255,0.12);
+            --radius:      20px;
+            --transition:  0.3s cubic-bezier(.4,0,.2,1);
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'Outfit', sans-serif;
+            background: linear-gradient(135deg, #0f1535 0%, #1a2250 40%, #0d1b3e 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ── ANIMATED BACKGROUND ── */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(circle at 20% 20%, rgba(0,120,255,0.18) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0,198,255,0.12) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(0,119,255,0.06) 0%, transparent 70%);
+            animation: bgPulse 8s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+        @keyframes bgPulse {
+            from { opacity: 0.7; }
+            to   { opacity: 1;   }
+        }
+
+        /* ── PARTICLES ── */
+        .particles { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0,150,255,0.25);
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(100vh) scale(0);   opacity: 0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 0.6; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        /* ── MAIN WRAPPER ── */
+        .wrapper {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* ── HEADER LOGO ── */
+        .logo-area {
+            text-align: center;
+            margin-bottom: 36px;
+            animation: slideDown 0.7s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to   { opacity: 1; transform: translateY(0);     }
+        }
+        .logo-icon {
+            width: 90px; height: 90px;
+            background: linear-gradient(135deg, #0077ff, #00c6ff);
+            border-radius: 28px;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 0 0 40px rgba(0,120,255,0.5), 0 0 80px rgba(0,198,255,0.2);
+            animation: glowPulse 3s ease-in-out infinite;
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(0,120,255,0.5), 0 0 80px rgba(0,198,255,0.2); }
+            50%       { box-shadow: 0 0 60px rgba(0,120,255,0.7), 0 0 120px rgba(0,198,255,0.3); }
+        }
+        .logo-icon i { font-size: 44px; color: #fff; }
+        .logo-area h1 {
+            font-size: 2.6rem; font-weight: 900; letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 0%, #a8d4ff 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .logo-area p {
+            color: rgba(200,220,255,0.75); font-size: 1rem; margin-top: 6px; font-weight: 400;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        /* ── CARD ── */
+        .card {
+            width: 100%; max-width: 480px;
+            background: var(--card-bg);
+            border-radius: 28px;
+            padding: 40px;
+            box-shadow: var(--shadow), 0 0 0 1px rgba(0,120,255,0.1);
+            animation: slideUp 0.6s ease 0.2s both;
+            backdrop-filter: blur(20px);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0);     }
+        }
+
+        /* ── TABS ── */
+        .tabs {
+            display: flex; gap: 8px;
+            background: #f0f4ff; border-radius: 16px; padding: 6px;
+            margin-bottom: 32px;
+        }
+        .tab-btn {
+            flex: 1; padding: 12px; border: none; border-radius: 12px;
+            font-family: 'Outfit', sans-serif; font-size: 1rem; font-weight: 700;
+            cursor: pointer; transition: var(--transition);
+            color: var(--blue); background: transparent;
+        }
+        .tab-btn.active {
+            background: var(--blue);
+            color: white;
+            box-shadow: 0 6px 20px rgba(0,100,255,0.3);
+        }
+        .tab-btn:hover:not(.active) { background: rgba(0,120,255,0.08); }
+
+        /* ── TAB PANELS ── */
+        .tab-panel { display: none; animation: fadeIn 0.3s ease; }
+        .tab-panel.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .panel-title {
+            font-size: 1.4rem; font-weight: 800; color: var(--text);
+            margin-bottom: 24px;
+        }
+        .panel-title span { color: var(--blue); }
+
+        /* ── FORM ── */
+        .form-group { margin-bottom: 20px; }
+        .form-label {
+            display: block; font-size: 0.85rem; font-weight: 700;
+            color: var(--blue); text-transform: uppercase; letter-spacing: 0.8px;
+            margin-bottom: 8px;
+        }
+        .form-input {
+            width: 100%; padding: 14px 16px;
+            background: #f4f8ff; border: 2px solid #dbeafe;
+            border-radius: 14px; font-family: 'Outfit', sans-serif;
+            font-size: 1rem; color: var(--text); transition: var(--transition);
+            outline: none;
+        }
+        .form-input:focus {
+            border-color: var(--blue);
+            background: #fff;
+            box-shadow: 0 0 0 4px rgba(0,120,255,0.12);
+        }
+        .form-input-icon { position: relative; }
+        .form-input-icon i {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+            color: var(--blue); font-size: 16px; pointer-events: none;
+        }
+        .form-input-icon .form-input { padding-left: 44px; }
+
+        /* ── BUTTON ── */
+        .btn {
+            width: 100%; padding: 16px;
+            background: linear-gradient(135deg, #0099ff, #0055ff);
+            color: #fff; border: none; border-radius: 14px;
+            font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800;
+            cursor: pointer; transition: var(--transition);
+            box-shadow: 0 8px 24px rgba(0,100,255,0.3);
+            position: relative; overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+        .btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0; transition: var(--transition);
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,100,255,0.4); }
+        .btn:hover::after { opacity: 1; }
+        .btn:active { transform: translateY(0); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .btn .btn-spinner { display: none; }
+        .btn.loading .btn-text { display: none; }
+        .btn.loading .btn-spinner { display: inline-block; }
+
+        /* ── ALERTS ── */
+        .alert {
+            padding: 14px 18px; border-radius: 12px;
+            font-size: 0.95rem; font-weight: 600;
+            margin-bottom: 20px; display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .alert.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; display: flex; align-items: center; gap: 10px; }
+        .alert.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; display: flex; align-items: center; gap: 10px; }
+        .alert.warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; display: flex; align-items: center; gap: 10px; }
+        .alert.show { display: flex; }
+
+        /* ── FOOTER ── */
+        .footer {
+            text-align: center; color: rgba(180,200,255,0.6);
+            font-size: 0.9rem; margin-top: 28px;
+            font-weight: 500;
+        }
+        .footer strong { color: rgba(180,200,255,0.9); }
+
+        /* ── DIVIDER ── */
+        .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+        .divider span { flex: 1; height: 1px; background: #e2eaff; }
+        .divider p { color: var(--text-muted); font-size: 0.85rem; white-space: nowrap; }
+
+        /* ── BADGE ── */
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: linear-gradient(135deg, #e8f3ff, #d4e8ff);
+            color: var(--blue); padding: 6px 14px; border-radius: 99px;
+            font-size: 0.8rem; font-weight: 700;
+            border: 1px solid rgba(0,120,255,0.15);
+            margin-bottom: 20px;
+        }
+        .badge i { font-size: 12px; }
+
+        /* ── RESPONSIVE ── */
+        @media (max-width: 520px) {
+            .card { padding: 28px 20px; }
+            .logo-area h1 { font-size: 2rem; }
+        }
+    </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+
+<!-- Particles -->
+<div class="particles" id="particles"></div>
+
+<div class="wrapper">
+    <!-- Logo Area -->
+    <div class="logo-area">
+        <div class="logo-icon"><i class="fas fa-shield-halved"></i></div>
+        <h1>🚩 Darkstar Boii Sahiil 🚩</h1>
+        <p>End-to-End Encrypted · Automation System</p>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+        <div style="text-align:center; margin-bottom: 24px;">
+            <span class="badge"><i class="fas fa-lock"></i> SECURE E2EE SYSTEM</span>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('login')">
+                <i class="fas fa-sign-in-alt"></i> Login
+            </button>
+            <button class="tab-btn" onclick="switchTab('signup')">
+                <i class="fas fa-user-plus"></i> Sign Up
+            </button>
+        </div>
+
+        <!-- LOGIN -->
+        <div class="tab-panel active" id="tab-login">
+            <p class="panel-title">Welcome <span>Back!</span></p>
+            <div class="alert" id="login-alert"></div>
+
+            <div class="form-group form-input-icon">
+                <label class="form-label">Username</label>
+                <i class="fas fa-user"></i>
+                <input type="text" class="form-input" id="login-username" placeholder="Enter your username" autocomplete="username" />
+            </div>
+            <div class="form-group form-input-icon">
+                <label class="form-label">Password</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" class="form-input" id="login-password" placeholder="Enter your password" autocomplete="current-password" />
+            </div>
+
+            <button class="btn" id="login-btn" onclick="doLogin()">
+                <span class="btn-text"><i class="fas fa-sign-in-alt"></i> &nbsp; LOGIN</span>
+                <span class="btn-spinner"><i class="fas fa-spinner fa-spin"></i> &nbsp; Logging in...</span>
+            </button>
+        </div>
+
+        <!-- SIGNUP -->
+        <div class="tab-panel" id="tab-signup">
+            <p class="panel-title">Create <span>Account</span></p>
+            <div class="alert" id="signup-alert"></div>
+
+            <div class="form-group form-input-icon">
+                <label class="form-label">Choose Username</label>
+                <i class="fas fa-user"></i>
+                <input type="text" class="form-input" id="signup-username" placeholder="Choose a unique username" autocomplete="username" />
+            </div>
+            <div class="form-group form-input-icon">
+                <label class="form-label">Choose Password</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" class="form-input" id="signup-password" placeholder="Create a strong password" autocomplete="new-password" />
+            </div>
+            <div class="form-group form-input-icon">
+                <label class="form-label">Confirm Password</label>
+                <i class="fas fa-lock"></i>
+                <input type="password" class="form-input" id="signup-confirm" placeholder="Re-enter your password" autocomplete="new-password" />
+            </div>
+
+            <button class="btn" id="signup-btn" onclick="doSignup()">
+                <span class="btn-text"><i class="fas fa-user-plus"></i> &nbsp; CREATE ACCOUNT</span>
+                <span class="btn-spinner"><i class="fas fa-spinner fa-spin"></i> &nbsp; Creating...</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="footer">
+        MADE BY <strong>Darkstar Boii Sahiil</strong> 🇮🇳 &nbsp;|&nbsp; FHIR System 2026
+    </div>
+</div>
+
+<script>
+// ── Particles ──
+(function() {
+    const container = document.getElementById('particles');
+    for (let i = 0; i < 25; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        const size = Math.random() * 6 + 3;
+        p.style.cssText = `
+            width:${size}px; height:${size}px;
+            left:${Math.random()*100}%;
+            animation-duration:${Math.random()*15+10}s;
+            animation-delay:${Math.random()*10}s;
+            opacity:${Math.random()*0.5+0.1};
+        `;
+        container.appendChild(p);
+    }
+})();
+
+// ── Tab Switch ──
+function switchTab(tab) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    event.currentTarget.classList.add('active');
+}
+
+// ── Show Alert ──
+function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.className = 'alert ' + type + ' show';
+    const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle' };
+    el.innerHTML = `<i class="fas ${icons[type] || 'fa-info-circle'}"></i> ${msg}`;
+    setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+// ── Login ──
+async function doLogin() {
+    const btn = document.getElementById('login-btn');
+    const username = document.getElementById('login-username').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    if (!username || !password) { showAlert('login-alert', 'Please enter username and password.', 'warning'); return; }
+
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+            credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('login-alert', `✅ Welcome back, ${data.username}!`, 'success');
+            setTimeout(() => window.location.href = '/dashboard', 800);
+        } else {
+            showAlert('login-alert', data.error || 'Login failed.', 'error');
+        }
+    } catch(e) { showAlert('login-alert', 'Network error. Please try again.', 'error'); }
+    btn.classList.remove('loading'); btn.disabled = false;
+}
+
+// ── Signup ──
+async function doSignup() {
+    const btn = document.getElementById('signup-btn');
+    const username = document.getElementById('signup-username').value.trim();
+    const password = document.getElementById('signup-password').value.trim();
+    const confirm  = document.getElementById('signup-confirm').value.trim();
+    if (!username || !password || !confirm) { showAlert('signup-alert', 'Please fill all fields.', 'warning'); return; }
+    if (password !== confirm) { showAlert('signup-alert', 'Passwords do not match!', 'error'); return; }
+    if (password.length < 6) { showAlert('signup-alert', 'Password must be at least 6 characters.', 'warning'); return; }
+
+    btn.classList.add('loading'); btn.disabled = true;
+    try {
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, confirm_password: confirm }),
+            credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success) {
+            showAlert('signup-alert', '✅ Account created! Please login now.', 'success');
+            setTimeout(() => {
+                document.querySelector('.tab-btn').click();
+                document.getElementById('login-username').value = username;
+            }, 1200);
+        } else {
+            showAlert('signup-alert', data.error || 'Registration failed.', 'error');
+        }
+    } catch(e) { showAlert('signup-alert', 'Network error. Please try again.', 'error'); }
+    btn.classList.remove('loading'); btn.disabled = false;
+}
+
+// Enter key support
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+        const activeTab = document.querySelector('.tab-panel.active').id;
+        if (activeTab === 'tab-login') doLogin();
+        else doSignup();
+    }
+});
+</script>
+</body>
+</html>
