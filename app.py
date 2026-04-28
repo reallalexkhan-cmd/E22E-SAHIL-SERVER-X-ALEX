@@ -465,7 +465,10 @@ def health():
     return jsonify({'status': 'ok', 'service': 'FHIR System', 'developer': 'Darkstar Boii Sahiil'})
 
 if __name__ == '__main__':
+    PORT = int(os.environ.get("PORT", 5000))
+
     print(f"🚀 FHIR System starting on port {PORT}")
-    print(f"   Developer: Darkstar Boii Sahiil")
+    print("   Developer: Darkstar Boii Sahiil")
     print(f"   URL: http://0.0.0.0:{PORT}")
+
     app.run(host='0.0.0.0', port=PORT, debug=False)
